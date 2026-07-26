@@ -3,12 +3,12 @@
 # logged in. Re-running it is safe (it re-renders and reloads the services).
 #
 # Option A - clone first:
-#   git clone https://github.com/YOU/inference-server.git ~/inference-server
+#   git clone https://github.com/danaltdel/inference-server.git ~/inference-server
 #   ~/inference-server/bootstrap.sh
 #
 # Option B - one-liner for a public repo:
-#   curl -fsSL https://raw.githubusercontent.com/YOU/inference-server/main/bootstrap.sh \
-#     | REPO_URL=https://github.com/YOU/inference-server.git bash -s -- --keep-awake
+#   curl -fsSL https://raw.githubusercontent.com/danaltdel/inference-server/main/bootstrap.sh \
+#     | REPO_URL=https://github.com/danaltdel/inference-server.git bash -s -- --keep-awake
 #
 # Env / flags:
 #   REPO_URL      git URL to clone (required for option B)

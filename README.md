@@ -38,16 +38,11 @@ machinery here doesn't care what it manages.)
 | `launchd/*.plist.tmpl` | service definitions, rendered by bootstrap |
 | `bootstrap.sh` | one-time machine setup |
 
-## 1. Push this repo
+## 1. The repo
 
-```sh
-git init -b main
-git add .
-git commit -m "inference server config"
-gh repo create inference-server --public --source . --push
-```
-
-Then replace `YOU` in the commands below with your GitHub username.
+This config lives at <https://github.com/danaltdel/inference-server>. The Mac
+Studio tracks `main`, so changes land via PR (or a direct push to `main`) and
+apply themselves within a minute.
 
 ## 2. Set up the Mac Studio (once)
 
@@ -56,8 +51,8 @@ Tools are installed (`xcode-select --install` — macOS also offers this
 automatically the first time `git` runs).
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/YOU/inference-server/main/bootstrap.sh \
-  | REPO_URL=https://github.com/YOU/inference-server.git bash -s -- --keep-awake
+curl -fsSL https://raw.githubusercontent.com/danaltdel/inference-server/main/bootstrap.sh \
+  | REPO_URL=https://github.com/danaltdel/inference-server.git bash -s -- --keep-awake
 ```
 
 This clones the repo to `~/inference-server`, installs Homebrew + Ollama if
@@ -116,20 +111,50 @@ logged to `sync.log`; the last good server keeps serving throughout.
 
 ## Which models fit in 256 GB?
 
-Approximate resident memory at the default 4-bit quantization:
+Approximate resident memory at the default 4-bit quantization (as of
+July 2026):
 
 | model | memory | notes |
 |---|---|---|
+| `qwen3.6:27b` | ~20 GB | Apr 2026; beats the previous 397B Qwen3.5 flagship on SWE-bench Verified, has vision — best quality-per-GB |
 | `gpt-oss:120b` | ~70 GB | default here — MoE, fast, strong generalist |
-| `qwen3:235b` | ~150 GB | about the biggest sensible fit; top open-weights quality |
+| `qwen3:235b` | ~150 GB | about the biggest sensible fit; top of the Qwen3 generation |
 | `llama3.3:70b` | ~45 GB | solid dense generalist |
 | `deepseek-r1:70b` | ~45 GB | reasoning |
-| `qwen3-coder:30b` | ~20 GB | fast coder — pairs well with a big generalist |
 
-With `OLLAMA_MAX_LOADED_MODELS=2` you can keep e.g. `gpt-oss:120b` +
-`qwen3-coder:30b` resident simultaneously and switch per-request with zero
-load time. Leave headroom above the model size for the KV cache — roughly
-10–30 GB at long contexts even with the quantized cache enabled.
+With `OLLAMA_MAX_LOADED_MODELS=2` the two default models (`gpt-oss:120b` +
+`qwen3.6:27b`, ~90 GB together) stay resident simultaneously and switch
+per-request with zero load time. Leave headroom above the model size for the
+KV cache — roughly 10–30 GB at long contexts even with the quantized cache
+enabled.
+
+The July 2026 open-weights frontier (Kimi K3 at 2.8T params, DeepSeek V4)
+is out of reach for any single machine; the one exception that *barely*
+fits is below.
+
+## Frontier experiment: GLM-5.2 in 2-bit
+
+GLM-5.2 (Z.ai, 744B-A40B MoE) is the current #1 open-weights model. Ollama
+only offers it as a `:cloud` tag, but Unsloth's 2-bit dynamic quant
+(`UD-IQ2_M`, ~239 GB) fits a 256 GB Mac — barely. Treat it as an offline
+experiment, not a serving config: single-digit tokens/sec, visible 2-bit
+quality loss, and almost no memory left for context.
+
+```sh
+# free the memory ollama's resident models hold (they reload on demand)
+launchctl kickstart -k "gui/$(id -u)/com.inference.ollama"
+
+# let the GPU wire ~245 of 256 GB (default cap is ~75%; resets on reboot)
+sudo sysctl iogpu.wired_limit_mb=245000
+
+brew install llama.cpp
+llama-server -hf unsloth/GLM-5.2-GGUF:UD-IQ2_M --port 8081
+```
+
+See the [Unsloth GLM-5.2 guide](https://unsloth.ai/docs/models/glm-5.2)
+for current file names and recommended flags. Run it on a separate port and
+leave the launchd services alone; the sync machinery neither manages nor
+interferes with it.
 
 ## Security
 

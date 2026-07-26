@@ -5,9 +5,12 @@
 # Push a change to this file and the Mac Studio downloads the new model
 # automatically on the next sync (within ~60s; big models take a while).
 
-gpt-oss:120b            # ~70 GB  - strong general MoE model, fast on Apple Silicon
+gpt-oss:120b            # ~70 GB - strong general MoE model, fast on Apple Silicon
+qwen3.6:27b             # ~20 GB - Apr 2026 dense 27B with vision; beats the older 397B Qwen3.5 flagship on SWE-bench Verified
 
-# qwen3:235b            # ~150 GB - flagship quality, the biggest sensible fit for 256 GB
+# See https://ollama.com/library/qwen3.6/tags for the 35B-A3B MoE sibling and
+# higher-precision (q8) builds - with 256 GB there's room to run 27B at q8.
+
+# qwen3:235b            # ~150 GB - previous-gen flagship, biggest comfortable fit
 # llama3.3:70b          # ~45 GB  - solid dense general model
-# qwen3-coder:30b       # ~20 GB  - fast coding model, good sidekick to a big general model
-# deepseek-r1:70b       # ~45 GB  - reasoning model
+# deepseek-r1:70b       # ~45 GB  - reasoning
