@@ -71,7 +71,7 @@ render() {
   sed -e "s|__REPO_DIR__|$REPO_DIR|g" -e "s|__HOME__|$HOME|g" "$1" > "$2"
 }
 
-for name in com.inference.ollama com.inference.sync; do
+for name in com.inference.ollama com.inference.web com.inference.sync; do
   render "$REPO_DIR/launchd/$name.plist.tmpl" "$AGENTS_DIR/$name.plist"
   launchctl bootout "gui/$UID_N/$name" 2>/dev/null || true
   sleep 1
@@ -99,10 +99,14 @@ fi
 IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo '<this-mac-ip>')"
 PORT="$(grep -E '^OLLAMA_HOST=' "$REPO_DIR/config/server.env" | cut -d: -f2)"
 [ -n "$PORT" ] || PORT=11434
+WEB_PORT="$(grep -E '^INFERENCE_WEB_PORT=' "$REPO_DIR/config/server.env" | cut -d= -f2)"
+[ -n "$WEB_PORT" ] || WEB_PORT=8080
 
 cat <<EOF
 
 [bootstrap] done. From another machine on your network try:
+
+  http://$IP:$WEB_PORT  <- browser test page (model toggle + chat)
 
   curl http://$IP:$PORT/api/version
   curl http://$IP:$PORT/v1/chat/completions -H 'Content-Type: application/json' -d '{
@@ -110,7 +114,7 @@ cat <<EOF
     "messages": [{"role": "user", "content": "hello"}]
   }'
 
-Logs:    $LOG_DIR/{ollama,sync}.log
+Logs:    $LOG_DIR/{ollama,web,sync}.log
 Status:  $REPO_DIR/scripts/status.sh
 
 Reminder for a headless box: enable automatic login (System Settings >

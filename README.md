@@ -16,7 +16,8 @@ minute, downloads whatever it needs, and reconfigures itself.
                                                               │ pull models in models.txt
                                                               ▼
  any device on LAN ──────────────────────────────▶  ollama serve (launchd, always on)
-                    http://mac-studio.local:11434/v1
+      http://mac-studio.local:11434/v1  ── the API
+      http://mac-studio.local:8080      ── browser test page (launchd)
 ```
 
 Backend is [Ollama](https://ollama.com): native Metal support on Apple
@@ -35,6 +36,8 @@ machinery here doesn't care what it manages.)
 | `scripts/apply.sh` | idempotent reconciler (restart server, pull/prune models) |
 | `scripts/run-server.sh` | launchd entry point for the server |
 | `scripts/status.sh` | health overview, handy over ssh |
+| `web/index.html` | browser test page: model toggle + streaming chat |
+| `scripts/serve.py` + `run-web.sh` | no-cache static server behind the test page |
 | `launchd/*.plist.tmpl` | service definitions, rendered by bootstrap |
 | `bootstrap.sh` | one-time machine setup |
 
@@ -93,6 +96,21 @@ The `ollama` CLI on any machine can also target it:
 (`mac-studio.local` is the machine's local hostname — set it under System
 Settings → General → Sharing, or use its IP.)
 
+## Test page
+
+Open <http://mac-studio.local:8080> from any device on the LAN: a
+zero-dependency chat page served by the box itself. Pick any installed model
+from the dropdown (resident ones are marked "loaded"), send messages, and
+watch the reply stream in with a tokens/sec readout when it finishes.
+Switching models mid-conversation keeps the history — useful for asking two
+models the same follow-up back to back. Enter sends, Shift+Enter is a
+newline, the Send button doubles as Stop while streaming.
+
+The page calls the Ollama API directly from your browser;
+`OLLAMA_ORIGINS=*` in `config/server.env` is what permits that cross-port
+request. It's plain HTML/JS served with caching disabled — edit
+`web/index.html`, push, and a plain refresh shows the new version.
+
 ## Day-2 operations
 
 Everything is a git push:
@@ -144,6 +162,12 @@ load time. Leave headroom above the model size for the KV cache — roughly
 - Sync uses `git reset --hard origin/main`: whoever can push to this repo
   controls the machine. Keep force-push protection on and don't add
   collaborators you wouldn't hand a shell.
+- `OLLAMA_ORIGINS=*` means any webpage open in a browser on your LAN may
+  attempt requests against the API (modern browsers increasingly block
+  public→private-network requests, but don't rely on that alone). On a
+  trusted home network it's a fair trade for the test page working via
+  hostname or IP alike; tighten it to explicit origins such as
+  `OLLAMA_ORIGINS=http://mac-studio.local:8080` if you'd rather.
 
 ## Troubleshooting
 

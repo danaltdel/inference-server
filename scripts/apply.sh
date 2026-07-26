@@ -41,6 +41,21 @@ if [ "$CONFIG_HASH" != "$LAST_HASH" ]; then
   echo "$CONFIG_HASH" > "$STATE_DIR/server-config-hash"
 fi
 
+# ---- 3b. web test page service --------------------------------------------
+WEB_SERVICE="gui/$(id -u)/com.inference.web"
+if launchctl print "$WEB_SERVICE" >/dev/null 2>&1; then
+  WEB_HASH="$(cat "$REPO_DIR/config/server.env" "$REPO_DIR/scripts/run-web.sh" "$REPO_DIR/scripts/serve.py" | shasum -a 256 | cut -d' ' -f1)"
+  LAST_WEB_HASH="$(cat "$STATE_DIR/web-config-hash" 2>/dev/null || true)"
+  if [ "$WEB_HASH" != "$LAST_WEB_HASH" ]; then
+    log "web server config changed; restarting"
+    launchctl kickstart -k "$WEB_SERVICE"
+    echo "$WEB_HASH" > "$STATE_DIR/web-config-hash"
+  fi
+else
+  # Non-fatal: the API is the product, the test page is a convenience.
+  log "NOTE: com.inference.web not loaded; re-run bootstrap.sh to enable the test page"
+fi
+
 # ---- 4. wait for the API --------------------------------------------------
 UP=false
 for _ in $(seq 1 30); do
