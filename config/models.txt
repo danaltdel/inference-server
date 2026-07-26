@@ -1,0 +1,13 @@
+# Models the server must have pulled and ready. One per line; anything from
+# https://ollama.com/library works. Lines starting with # and inline
+# comments are ignored. Approximate memory footprint when loaded in brackets.
+#
+# Push a change to this file and the Mac Studio downloads the new model
+# automatically on the next sync (within ~60s; big models take a while).
+
+gpt-oss:120b            # ~70 GB  - strong general MoE model, fast on Apple Silicon
+
+# qwen3:235b            # ~150 GB - flagship quality, the biggest sensible fit for 256 GB
+# llama3.3:70b          # ~45 GB  - solid dense general model
+# qwen3-coder:30b       # ~20 GB  - fast coding model, good sidekick to a big general model
+# deepseek-r1:70b       # ~45 GB  - reasoning model
