@@ -59,13 +59,13 @@ curl -fsSL https://raw.githubusercontent.com/danaltdel/inference-server/main/boo
 ```
 
 This clones the repo to `~/inference-server`, installs Homebrew + Ollama if
-missing, loads the two launchd services, disables system sleep
-(`--keep-awake`), and does the first model download (~65 GB for the default
-model — give it time).
+missing, loads the three launchd services, disables system sleep
+(`--keep-awake`), and does the first model downloads (~80 GB for the two
+default models — give it time).
 
 For a box that survives reboots unattended: enable **automatic login**
 (System Settings → Users & Groups) and leave **FileVault off** (it blocks
-auto-login). launchd brings both services back on login.
+auto-login). launchd brings the services back on login.
 
 ## 3. Use it
 
@@ -117,7 +117,7 @@ Everything is a git push:
 - **Remove old models from disk** — set `INFERENCE_PRUNE_MODELS=true` in
   `server.env`, and anything not listed in `models.txt` is deleted on apply.
 - **Check on it** — `ssh mac-studio '~/inference-server/scripts/status.sh'`
-- **Logs** — `~/Library/Logs/inference-server/{ollama,sync}.log` on the box.
+- **Logs** — `~/Library/Logs/inference-server/{ollama,web,sync}.log` on the box.
 - **Force a re-apply without a commit** —
   `ssh mac-studio 'rm ~/.local/state/inference-server/applied-commit'`
   (next sync tick re-runs apply), or run `scripts/apply.sh` directly.
