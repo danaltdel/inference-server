@@ -4,7 +4,7 @@
 # tree to it and runs apply.sh. The applied commit is recorded only on a
 # successful apply, so a failed apply is retried on the next tick.
 set -euo pipefail
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STATE_DIR="$HOME/.local/state/inference-server"

@@ -2,7 +2,7 @@
 # Idempotent "make the machine match the repo" step. Run by sync.sh after
 # every repo update and once by bootstrap.sh. Safe to run by hand.
 set -euo pipefail
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STATE_DIR="$HOME/.local/state/inference-server"
@@ -13,8 +13,8 @@ log() { echo "$(date '+%Y-%m-%d %H:%M:%S') [apply] $*"; }
 
 # ---- 1. dependencies ------------------------------------------------------
 if ! command -v ollama >/dev/null 2>&1; then
-  log "ollama not found; installing via homebrew"
-  brew install ollama
+  log "ollama not found; installing standalone binary"
+  "$REPO_DIR/scripts/install-ollama.sh"
 fi
 
 # ---- 2. server config -----------------------------------------------------

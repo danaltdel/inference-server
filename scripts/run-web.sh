@@ -2,7 +2,7 @@
 # Serves web/ (the browser test page) on INFERENCE_WEB_PORT.
 # Invoked by launchd (com.inference.web).
 set -euo pipefail
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 

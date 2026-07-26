@@ -38,6 +38,7 @@ machinery here doesn't care what it manages.)
 | `scripts/status.sh` | health overview, handy over ssh |
 | `web/index.html` | browser test page: model toggle + streaming chat |
 | `scripts/serve.py` + `run-web.sh` | no-cache static server behind the test page |
+| `scripts/install-ollama.sh` | standalone Ollama install into `~/.local/bin` (no admin) |
 | `launchd/*.plist.tmpl` | service definitions, rendered by bootstrap |
 | `bootstrap.sh` | one-time machine setup |
 
@@ -49,23 +50,29 @@ apply themselves within a minute.
 
 ## 2. Set up the Mac Studio (once)
 
-Prerequisites: you're logged in as an admin user, and Xcode Command Line
-Tools are installed (`xcode-select --install` — macOS also offers this
-automatically the first time `git` runs).
+**No admin rights needed** — everything installs into the user's home
+directory (standalone Ollama binary in `~/.local/bin`, user-level launchd
+agents, `caffeinate` instead of `pmset`). The only prerequisite is `git`,
+which comes with the Xcode Command Line Tools; if the machine has never had
+them, that one install (`xcode-select --install`) does require an admin.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/danaltdel/inference-server/main/bootstrap.sh \
-  | REPO_URL=https://github.com/danaltdel/inference-server.git bash -s -- --keep-awake
+  | REPO_URL=https://github.com/danaltdel/inference-server.git bash
 ```
 
-This clones the repo to `~/inference-server`, installs Homebrew + Ollama if
-missing, loads the three launchd services, disables system sleep
-(`--keep-awake`), and does the first model downloads (~80 GB for the two
-default models — give it time).
+This clones the repo to `~/inference-server` (or updates an existing clone),
+downloads the standalone Ollama binary if missing, loads the four launchd
+services (server, test page, keep-awake, sync), and does the first model
+downloads (~80 GB for the two default models — give it time). Re-running the
+same one-liner is always safe and picks up the latest version of the setup
+itself.
 
 For a box that survives reboots unattended: enable **automatic login**
 (System Settings → Users & Groups) and leave **FileVault off** (it blocks
-auto-login). launchd brings the services back on login.
+auto-login). launchd brings the services back on login, and the awake
+service (`caffeinate`) prevents system sleep while the user is logged in —
+no sudo involved.
 
 ## 3. Use it
 
@@ -203,3 +210,5 @@ interferes with it.
 | changes not applying | `tail -20 ~/Library/Logs/inference-server/sync.log` — fetch failures and apply errors land here |
 | port already in use | a manually-started `ollama serve` (or Ollama.app) is running; quit it — launchd owns the server |
 | model pull is slow | it's a 65–150 GB download; `sync.log` shows progress lines |
+| `ollama: command not found` in your shell | it lives in `~/.local/bin`; open a new terminal (bootstrap adds it to `~/.zshrc`) — services are unaffected |
+| API unreachable from other machines but fine locally | macOS firewall is on; allowing incoming connections needs an admin once (it's off by default) |

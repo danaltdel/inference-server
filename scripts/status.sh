@@ -2,7 +2,7 @@
 # Quick health overview. Run over ssh from anywhere:
 #   ssh mac-studio '~/inference-server/scripts/status.sh'
 set -uo pipefail
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
