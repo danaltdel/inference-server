@@ -33,6 +33,15 @@ else
 fi
 
 echo
+echo "== test page =="
+WEB_PORT="${INFERENCE_WEB_PORT:-8080}"
+if curl -fsS --max-time 2 "http://127.0.0.1:$WEB_PORT/" >/dev/null 2>&1; then
+  echo "  serving on :$WEB_PORT"
+else
+  echo "  NOT RESPONDING on :$WEB_PORT (see ~/Library/Logs/inference-server/web.log)"
+fi
+
+echo
 echo "== disk =="
 df -h / | tail -1
 
